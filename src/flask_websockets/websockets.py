@@ -9,17 +9,17 @@ from flask import Blueprint, Flask, Response, current_app, request
 
 from .websocket import WebSocket
 
-__all__ = ("Channels",)
+__all__ = ("WebSockets",)
 
 
 logger = logging.getLogger(__name__)
 
 
-class Channels:
-    """Instantiate the Flask-Channels extension.
+class WebSockets:
+    """Instantiate the Flask-WebSockets extension.
 
     :param app: The Flask application instance. If not provided, it must be
-                initialized later by calling the :func:`Channels.init_app` method.
+                initialized later by calling the :func:`WebSockets.init_app` method.
     """
 
     def __init__(self, app: Flask | None = None) -> None:
@@ -49,7 +49,7 @@ class Channels:
         establishes a connection, with a WebSocket connection object passed
         as an argument. Example::
 
-            @channels.route('/ws')
+            @websockets.route('/ws')
             def websocket_route(ws):
                 # The ws object has the following methods:
                 # - ws.send(data)
