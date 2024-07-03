@@ -1,7 +1,7 @@
-from .channels import Channels
 from .websocket import WebSocket
+from .websockets import WebSockets
 
 __all__ = (
     "WebSocket",
-    "Channels",
+    "WebSockets",
 )

@@ -3,22 +3,22 @@ from threading import Thread
 
 from flask import Flask
 
-from flask_channels import Channels, WebSocket
+from flask_websockets import WebSocket, WebSockets
 
 app = Flask(__name__)
-channels = Channels(app)
+websockets = WebSockets(app)
 
 
-@channels.route("/echo")
+@websockets.route("/echo")
 def echo(ws: WebSocket) -> None:
-    with channels.subscribe(ws, ["time", "rec"]):
+    with websockets.subscribe(ws, ["time", "rec"]):
         for data in ws.iter_data():
-            channels.publish(data, ["rec"])
+            websockets.publish(data, ["rec"])
 
 
 def publish_to_general() -> None:
     while 1:
-        channels.publish(str(time.time()), ["time"])
+        websockets.publish(str(time.time()), ["time"])
         time.sleep(0.1)
 
 

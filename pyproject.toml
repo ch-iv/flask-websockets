@@ -41,7 +41,7 @@ dev = [
 
 
 [tool.mypy]
-packages = ["flask_channels", "tests", "examples"]
+packages = ["flask_websockets", "tests", "examples"]
 python_version = "3.12"
 disallow_any_generics = false
 disallow_untyped_decorators = true
@@ -57,7 +57,7 @@ warn_unused_ignores = true
 
 [tool.pyright]
 disableBytesTypePromotions = true
-include = ["flask_channels", "tests", "examples"]
+include = ["flask_websockets", "tests", "examples"]
 pythonVersion = "3.12"
 reportUnnecessaryTypeIgnoreComments = true
 
@@ -123,7 +123,7 @@ lint.ignore = [
   "ISC001", # Ruff formatter incompatible
   "S101", # Use of `assert` detected
 ]
-src = ["flask_channels", "tests", "examples"]
+src = ["flask_websockets", "tests", "examples"]
 target-version = "py312"
 
 [tool.ruff.lint.pydocstyle]
@@ -133,7 +133,7 @@ convention = "google"
 max-complexity = 12
 
 [tool.ruff.lint.isort]
-known-first-party = ["flask_channels", "tests", "examples"]
+known-first-party = ["flask_websockets", "tests", "examples"]
 
 
 [tool.ruff.format]

@@ -2,14 +2,14 @@ import unittest
 
 from flask import Blueprint, Flask
 
-import flask_channels
-from flask_channels import WebSocket
+import flask_websockets
+from flask_websockets import WebSocket
 
 
 class FlaskSockTestCase(unittest.TestCase):
     def test_create_direct(self) -> None:
         app = Flask(__name__, static_folder=None)
-        sock = flask_channels.Channels(app)
+        sock = flask_websockets.WebSockets(app)
 
         @sock.route("/ws")
         def ws(_ws: WebSocket) -> None:
@@ -22,7 +22,7 @@ class FlaskSockTestCase(unittest.TestCase):
 
     def test_create_indirect(self) -> None:
         app = Flask(__name__, static_folder=None)
-        sock = flask_channels.Channels()
+        sock = flask_websockets.WebSockets()
 
         @sock.route("/ws")
         def ws(_ws: WebSocket) -> None:
@@ -42,7 +42,7 @@ class FlaskSockTestCase(unittest.TestCase):
         app = Flask(__name__, static_folder=None)
         bp = Blueprint("bp", __name__)
 
-        sock = flask_channels.Channels()
+        sock = flask_websockets.WebSockets()
 
         @sock.route("/ws", bp=bp)
         def ws(_ws: WebSocket) -> None:

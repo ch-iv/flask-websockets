@@ -121,7 +121,7 @@ class WebSocket:
 
         self.sock: AbstractSocket = sock
         self.thread = thread_class(target=self._thread)
-        self.thread.name = self.thread.name.replace("(_thread)", "(flask_channels.WebSocket._thread)")
+        self.thread.name = self.thread.name.replace("(_thread)", "(flask_websockets.WebSocket._thread)")
         self.thread.start()
 
         self.ws = WSConnection(ConnectionType.SERVER)
