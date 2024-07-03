@@ -1,7 +1,7 @@
 [project]
-name = "flask-channels"
+name = "flask-websockets"
 version = "0.1.0"
-description = "Default template for PDM package"
+description = "A WebSockets and channels implementation for Flask"
 authors = [
     {name = "ch-iv", email = "alicesummer38@gmail.com"},
 ]
