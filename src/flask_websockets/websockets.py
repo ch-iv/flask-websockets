@@ -125,9 +125,6 @@ class WebSockets:
 
             for ws in self._subscriptions[channel]:
                 try:
-                    if isinstance(data, str):
-                        ws.send_text(data)
-                    elif isinstance(data, bytes):
-                        ws.send_bytes(data)
+                    ws.send(data)
                 except RuntimeError:
                     logger.warning("Couldn't to send data to a socket.")

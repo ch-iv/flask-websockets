@@ -147,3 +147,34 @@ test-all: test					## Run all tests
 
 .PHONY: check-all
 check-all: lint test-all coverage                   ## Run all linting, tests, and coverage checks
+
+
+# =============================================================================
+# Docs
+# =============================================================================
+.PHONY: docs-install
+docs-install: 										## Install docs dependencies
+	@echo "=> Installing documentation dependencies"
+	@$(PDM) install --group docs
+	@echo "=> Installed documentation dependencies"
+
+docs-clean: 										## Dump the existing built docs
+	@echo "=> Cleaning documentation build assets"
+	@rm -rf docs/_build
+	@echo "=> Removed existing documentation build assets"
+
+docs-serve: docs-clean 								## Serve the docs locally
+	@echo "=> Serving documentation"
+	$(PDM) run sphinx-autobuild docs docs/_build/ -j auto  --watch docs --watch tests --port 8002
+
+docs: docs-clean 									## Dump the existing built docs and rebuild them
+	@echo "=> Building documentation"
+	@$(PDM) run sphinx-build -M html docs docs/_build/ -E -a -j auto -W --keep-going
+
+.PHONY: docs-linkcheck
+docs-linkcheck: 									## Run the link check on the docs
+	@$(PDM) run sphinx-build -b linkcheck ./docs ./docs/_build -D linkcheck_ignore='http://.*','https://.*'
+
+.PHONY: docs-linkcheck-full
+docs-linkcheck-full: 									## Run the full link check on the docs
+	@$(PDM) run sphinx-build -b linkcheck ./docs ./docs/_build -D linkcheck_anchors=0

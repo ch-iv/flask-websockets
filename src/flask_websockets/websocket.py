@@ -127,18 +127,20 @@ class WebSocket:
         self.ws = WSConnection(ConnectionType.SERVER)
         self.handshake()
 
-    def send_bytes(self, data: bytes) -> None:
-        self._send(self.ws.send(BytesMessage(data=data)))
+    def send(self, data: bytes | str) -> None:
+        """Sends data to the websocket.
 
-    def send_text(self, data: str) -> None:
-        assert isinstance(data, str)
-        self._send(self.ws.send(TextMessage(data=data)))
-
-    def _send(self, message_bytes: bytes) -> None:
+        :param data: data to be sent to the websocket.
+        """
         if self.state == WebSocketState.DISCONNECTED:
             raise RuntimeError('Cannot call "send" once a close message has been sent.')
 
-        self.sock.send(message_bytes)
+        if isinstance(data, str):
+            self.sock.send(self.ws.send(TextMessage(data=data)))
+        elif isinstance(data, bytes):
+            self.sock.send(self.ws.send(BytesMessage(data=data)))
+        else:
+            raise TypeError("Data should be of instance bytes or str.")
 
     def receive(self, timeout: int | None = None) -> bytes | str | None:
         """Receive data over the WebSocket connection.
@@ -349,6 +351,10 @@ class WebSocket:
         return None
 
     def iter_data(self) -> Iterator[str | bytes]:
+        """Iterates over messages received by the websocket.
+
+        :returns: an iterator over all messages received by the websocket.
+        """
         try:
             while True:
                 data = self.receive()
@@ -357,3 +363,21 @@ class WebSocket:
                 yield data
         except RuntimeError:
             pass
+
+    def iter_bytes(self) -> Iterator[bytes]:
+        """Iterates over byte messages received by the websocket.
+
+        :returns: an iterator over all byte messages received by the websocket.
+        """
+        for data in self.iter_data():
+            if isinstance(data, bytes):
+                yield data
+
+    def iter_text(self) -> Iterator[str]:
+        """Iterates over text messages received by the websocket.
+
+        :returns: an iterator over all text messages received by the websocket.
+        """
+        for data in self.iter_data():
+            if isinstance(data, str):
+                yield data
