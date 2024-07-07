@@ -9,6 +9,8 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath("../../src/flask_websockets"))  # noqa: PTH100
+sys.path.insert(0, os.path.abspath("../.."))  # noqa: PTH100
+sys.path.insert(0, os.path.abspath("../../src"))  # noqa: PTH100
 sys.setrecursionlimit(1500)
 
 project = "flask-websockets"
