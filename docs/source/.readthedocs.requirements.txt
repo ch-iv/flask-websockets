@@ -9,3 +9,5 @@ auto-pytabs[sphinx]>=0.4.0
 sphinx-paramlinks>=0.6.0
 mkdocstrings[python]>=0.25.1
 shibuya>=2024.6.23
+flask>=3.0.3
+wsproto>=1.2.0
