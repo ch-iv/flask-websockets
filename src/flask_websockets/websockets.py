@@ -50,7 +50,7 @@ class WebSockets:
         as an argument. Example::
 
             @websockets.route('/ws')
-            def websocket_route(ws):
+            def websocket_route(ws: WebSocket):
                 # The ws object has the following methods:
                 # - ws.send(data)
                 # - ws.receive(timeout=None)
@@ -101,6 +101,21 @@ class WebSockets:
 
     @contextlib.contextmanager
     def subscribe(self, ws: WebSocket, channels: Iterable[str]) -> Generator[None, None, None]:
+        """Subscribes a websocket to channels. All subscribed websockets receive events from the channel they
+        are subscribed to.
+
+        Example::
+
+            @websockets.route("/ws")
+            def websocket_route(ws: WebSocket):
+                with websockets.subscribe(ws, ["channel1", "channel2"]):
+                    for data in ws.iter_data():
+                        pass
+
+        :param ws: A websocket to subscribe
+        :param channels: Channels to subscribe the websocket to
+        :return:
+        """
         channels_set: set[str] = set(channels)
         for channel in channels_set:
             if channel not in self._subscriptions:
@@ -112,12 +127,23 @@ class WebSockets:
             self.unsubscribe(ws, channels)
 
     def unsubscribe(self, ws: WebSocket, channels: Iterable[str]) -> None:
+        """Unsubscribe a websocket from given channels.
+
+        :param ws: A websocket to unsubscribe
+        :param channels: Channels to unsubscribe from
+        :return:
+        """
         channels_set: set[str] = set(channels)
         for channel in channels_set:
             if channel in self._subscriptions:
                 self._subscriptions[channel].remove(ws)
 
     def publish(self, data: bytes | str, channels: Iterable[str]) -> None:
+        """Publish data to the given channels. All subscribed websockets will receive this data.
+
+        :param data: Data to publish to the channels
+        :param channels: Channels to publish the data to
+        """
         channels_set: set[str] = set(channels)
         for channel in channels_set:
             if channel not in self._subscriptions:

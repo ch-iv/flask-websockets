@@ -353,6 +353,11 @@ class WebSocket:
     def iter_data(self) -> Iterator[str | bytes]:
         """Iterates over messages received by the websocket.
 
+        Example::
+
+            for data in ws.iter_data():
+                print(data)  # data can be of type bytes or string
+
         :returns: an iterator over all messages received by the websocket.
         """
         try:
@@ -367,6 +372,11 @@ class WebSocket:
     def iter_bytes(self) -> Iterator[bytes]:
         """Iterates over byte messages received by the websocket.
 
+        Example::
+
+            for data in ws.iter_data():
+                print(data)  # this is bytes
+
         :returns: an iterator over all byte messages received by the websocket.
         """
         for data in self.iter_data():
@@ -375,6 +385,11 @@ class WebSocket:
 
     def iter_text(self) -> Iterator[str]:
         """Iterates over text messages received by the websocket.
+
+        Example::
+
+            for data in ws.iter_data():
+                print(data)  # this is a string
 
         :returns: an iterator over all text messages received by the websocket.
         """
