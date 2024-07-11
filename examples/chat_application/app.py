@@ -15,7 +15,7 @@ class JoinMessage(NamedTuple):
     username: str
     message_type: str = "user_join"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return json.dumps(
             {
                 "message_type": self.message_type,
@@ -28,7 +28,7 @@ class LeaveMessage(NamedTuple):
     username: str
     message_type: str = "user_leave"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return json.dumps(
             {
                 "message_type": self.message_type,
@@ -42,7 +42,7 @@ class SendMessage(NamedTuple):
     content: str
     message_type: str = "send"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return json.dumps({"message_type": self.message_type, "sender": self.sender, "content": self.content})
 
 
@@ -70,7 +70,7 @@ def chat(ws: WebSocket) -> None:
 
 
 @app.route("/")
-def index():
+def index() -> str:
     session["username"] = generate_username()
     return render_template("index.html")
 
