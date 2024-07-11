@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import contextlib
 import enum
+import logging
+import queue
 import selectors
 from abc import ABC, abstractmethod
+from queue import Queue
 from time import time
 from typing import IO, TYPE_CHECKING, Any, cast
 
@@ -20,6 +23,7 @@ from wsproto.events import (
 )
 from wsproto.extensions import PerMessageDeflate
 from wsproto.frame_protocol import CloseReason
+from wsproto.utilities import LocalProtocolError
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -30,6 +34,8 @@ __all__ = (
     "WebSocketState",
 )
 
+logger = logging.getLogger(__name__)
+
 
 class AbstractSocket(ABC, IO):
     @abstractmethod
@@ -37,7 +43,7 @@ class AbstractSocket(ABC, IO):
         pass
 
     @abstractmethod
-    def recv(self, num_bytes: int) -> bytes:
+    def recv(self, num_bytes: int | None = None) -> bytes:
         pass
 
     @abstractmethod
@@ -70,7 +76,7 @@ class WebSocket:
         self.ping_interval = ping_interval
         self.max_message_size = max_message_size
         self.pong_received = True
-        self.input_buffer: list[str | bytes] = []
+        self.message_queue: Queue[str | bytes] = Queue()
         self.incoming_message = bytearray()
         self.incoming_message_len = 0
         self.close_reason = CloseReason.NO_STATUS_RCVD
@@ -84,14 +90,9 @@ class WebSocket:
             import threading
 
             thread_class = threading.Thread
-        if event_class is None:
-            import threading
-
-            event_class = threading.Event
         if selector_class is None:
             selector_class = selectors.DefaultSelector
         self.selector_class = selector_class
-        self.event = event_class()
 
         self.mode = "unknown"
         sock = None
@@ -135,14 +136,17 @@ class WebSocket:
         if self.state == WebSocketState.DISCONNECTED:
             raise RuntimeError('Cannot call "send" once a close message has been sent.')
 
-        if isinstance(data, str):
-            self.sock.send(self.ws.send(TextMessage(data=data)))
-        elif isinstance(data, bytes):
-            self.sock.send(self.ws.send(BytesMessage(data=data)))
-        else:
-            raise TypeError("Data should be of instance bytes or str.")
+        try:
+            if isinstance(data, str):
+                self.sock.send(self.ws.send(TextMessage(data=data)))
+            elif isinstance(data, bytes):
+                self.sock.send(self.ws.send(BytesMessage(data=data)))
+            else:
+                raise TypeError("Data should be of instance bytes or str.")
+        except BrokenPipeError:
+            self.state = WebSocketState.DISCONNECTED
 
-    def receive(self, timeout: int | None = None) -> bytes | str | None:
+    def receive(self, timeout: int | float | None = None) -> bytes | str | None:
         """Receive data over the WebSocket connection.
 
         :param timeout: Amount of time to wait for the data, in seconds. Set
@@ -152,20 +156,10 @@ class WebSocket:
         The data received is returned, as ``bytes`` or ``str``, depending on
         the type of the incoming message.
         """
-        while self.state == WebSocketState.CONNECTED and not self.input_buffer:
-            if not self.event.wait(timeout=timeout):
-                return None
-            self.event.clear()
-
         try:
-            return self.input_buffer.pop(0)
-        except IndexError:
-            pass
-
-        if not self.state == WebSocketState.CONNECTED:  # pragma: no cover
-            raise RuntimeError()
-
-        return None
+            return self.message_queue.get(block=True, timeout=timeout)
+        except queue.Empty:
+            return None
 
     def close(self, code: int = CloseReason.NORMAL_CLOSURE, reason: str | None = None) -> None:
         """Close the WebSocket connection.
@@ -180,7 +174,8 @@ class WebSocket:
 
         close_message = self.ws.send(CloseConnection(code, reason))
 
-        self.sock.send(close_message)
+        with contextlib.suppress(BrokenPipeError, LocalProtocolError):
+            self.sock.send(close_message)
 
         self.state = WebSocketState.DISCONNECTED
 
@@ -207,8 +202,12 @@ class WebSocket:
                     self.sock.send(self.ws.send(Ping()))
                     next_ping = max(now, next_ping) + self.ping_interval
                     continue
-
-            in_data = self.sock.recv(self.receive_bytes)
+            try:
+                in_data = self.sock.recv(self.receive_bytes)
+            except OSError as e:
+                logger.error(e)
+                self.state = WebSocketState.DISCONNECTED
+                break
             self.ws.receive_data(in_data)
             self._handle_events()
 
@@ -227,9 +226,7 @@ class WebSocket:
                 self.sock.send(accept_message)
 
             elif isinstance(event, CloseConnection):
-                self.sock.send(self.ws.send(event.response()))
-                self.state = WebSocketState.DISCONNECTED
-                self.event.set()
+                self.close()
 
             elif isinstance(event, Ping):
                 self.sock.send(self.ws.send(event.response()))
@@ -254,13 +251,12 @@ class WebSocket:
                     continue
 
                 if isinstance(event, BytesMessage):
-                    self.input_buffer.append(bytes(self.incoming_message))
+                    self.message_queue.put(bytes(self.incoming_message))
                 elif isinstance(event, TextMessage):
-                    self.input_buffer.append(self.incoming_message.decode())
+                    self.message_queue.put(self.incoming_message.decode())
 
                 self.incoming_message = bytearray()
                 self.incoming_message_len = 0
-                self.event.set()
 
     @classmethod
     def accept(
@@ -361,13 +357,15 @@ class WebSocket:
         :returns: an iterator over all messages received by the websocket.
         """
         try:
-            while True:
-                data = self.receive()
+            while self.state == WebSocketState.CONNECTED:
+                data = self.receive(0.1)
                 if data is None:
                     continue
+
                 yield data
-        except RuntimeError:
-            pass
+
+        except RuntimeError as e:
+            logger.error(e)
 
     def iter_bytes(self) -> Iterator[bytes]:
         """Iterates over byte messages received by the websocket.

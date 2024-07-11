@@ -12,14 +12,14 @@ def create_app() -> Flask:
 
     @websockets.route("/echo")
     def echo(ws: WebSocket) -> None:
-        with websockets.subscribe(ws, ["time", "rec"]):
+        with websockets.subscribe(ws, ["time", "echo"]):
             for data in ws.iter_data():
-                websockets.publish(data, ["rec"])
+                websockets.publish(data, ["echo"])
 
     def publish_to_general() -> None:
         while 1:
             websockets.publish(str(time.time()), ["time"])
-            time.sleep(0.1)
+            time.sleep(1)
 
     Thread(target=publish_to_general).start()
     return app

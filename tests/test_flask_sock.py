@@ -34,7 +34,7 @@ class FlaskSockTestCase(unittest.TestCase):
         sock.init_app(app)
 
         assert sock.app is not None
-        assert sock.bp is not None
+        assert sock.bp is not None  # type: ignore
         assert app.url_map._rules[0].rule == "/ws"
         assert app.url_map._rules[0].websocket is True
 
@@ -55,7 +55,7 @@ class FlaskSockTestCase(unittest.TestCase):
         app.register_blueprint(bp, url_prefix="/bp")
 
         assert sock.app is not None
-        assert sock.bp is None
+        assert sock.bp is None  # type: ignore
 
         @sock.route("/ws")
         def ws2(_ws: WebSocket) -> None:

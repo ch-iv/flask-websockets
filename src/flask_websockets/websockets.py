@@ -121,10 +121,9 @@ class WebSockets:
             if channel not in self._subscriptions:
                 self._subscriptions[channel] = set()
             self._subscriptions[channel].add(ws)
-        try:
-            yield None
-        finally:
-            self.unsubscribe(ws, channels)
+
+        yield None
+        self.unsubscribe(ws, channels)
 
     def unsubscribe(self, ws: WebSocket, channels: Iterable[str]) -> None:
         """Unsubscribe a websocket from given channels.

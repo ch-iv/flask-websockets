@@ -32,6 +32,9 @@ test = [
     "eventlet>=0.36.1",
     "gevent>=24.2.1",
     "waitress>=3.0.0",
+    "websocket-client>=1.8.0",
+    "requests>=2.32.3",
+    "types-requests>=2.32.0.20240622",
 ]
 lint = [
     "mypy>=1.10.1",
