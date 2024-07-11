@@ -1,10 +1,10 @@
 import time
-from multiprocessing import Process
 from queue import Queue
 from typing import cast
 
 import requests
 from flask import Flask, Response, make_response, request
+from multiprocess.context import Process  # type: ignore
 from websocket import create_connection
 
 from flask_websockets import WebSocket, WebSockets
