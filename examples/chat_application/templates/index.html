@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat</title>
+</head>
+<script>
+    window.onload = () => {
+        const socket = new WebSocket("ws://" + window.location.host + "/chat")
+        const textInput = document.getElementById("text-input")
+        const sendButton = document.getElementById("send-button")
+        const leaveButton = document.getElementById("leave-button")
+
+        socket.addEventListener("message", (event) => {
+            const message = JSON.parse(event.data)
+            const chat = document.getElementById("chat")
+
+            if (message.message_type === "user_join") {
+                chat.innerHTML += "<li>" + message.username + " joined the room </li>"
+            } else if (message.message_type === "send") {
+                chat.innerHTML += "<li>" + message.sender + ": " + message.content + "</li>"
+            } else if (message.message_type === "user_leave") {
+                chat.innerHTML += "<li>" + message.username + " left the room </li>"
+            }
+        });
+
+        sendButton.onclick = () => {
+            const message = textInput.value;
+            socket.send(message)
+            textInput.value = ""
+        }
+
+        leaveButton.onclick = () => {
+            socket.close()
+            chat.innerHTML += "<li>You left the room</li>"
+            document.getElementById("inputs").hidden = true
+        }
+    }
+</script>
+<body>
+<h1>Chat</h1>
+<ul id="chat"></ul>
+<label id="inputs">
+    <input type="text" id="text-input">
+    <button id="send-button">Send</button>
+    <button id="leave-button">Leave</button>
+</label>
+</body>
+</html>
