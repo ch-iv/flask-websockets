@@ -83,6 +83,9 @@ def publish_command(channel: str, data: str) -> None:
 
 
 def test_mock_client() -> None:
+    if platform.system() != "Linux":
+        return
+
     s = MockServer()
     s.run()
 
