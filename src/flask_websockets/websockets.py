@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import contextlib
 import logging
-from collections.abc import Callable, Generator, Iterable
 from functools import wraps
 from typing import TYPE_CHECKING, Any
 
@@ -9,6 +10,7 @@ from flask import Blueprint, Flask, Response, current_app, request
 from .websocket import WebSocket
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Generator, Iterable
     from wsgiref.types import StartResponse
 
 
@@ -81,7 +83,7 @@ class WebSockets:
                     ws.close()
 
                 class WebSocketResponse(Response):
-                    def __call__(self, environ: dict[str, Any], start_response: "StartResponse") -> Iterable[bytes]:
+                    def __call__(self, environ: dict[str, Any], start_response: StartResponse) -> Iterable[bytes]:
                         if ws.mode == "gunicorn":
                             raise StopIteration()
 
