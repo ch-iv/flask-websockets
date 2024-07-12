@@ -2,12 +2,15 @@ import contextlib
 import logging
 from collections.abc import Callable, Generator, Iterable
 from functools import wraps
-from typing import Any
-from wsgiref.types import StartResponse
+from typing import TYPE_CHECKING, Any
 
 from flask import Blueprint, Flask, Response, current_app, request
 
 from .websocket import WebSocket
+
+if TYPE_CHECKING:
+    from wsgiref.types import StartResponse
+
 
 __all__ = ("WebSockets",)
 
@@ -78,7 +81,7 @@ class WebSockets:
                     ws.close()
 
                 class WebSocketResponse(Response):
-                    def __call__(self, environ: dict[str, Any], start_response: StartResponse) -> Iterable[bytes]:
+                    def __call__(self, environ: dict[str, Any], start_response: "StartResponse") -> Iterable[bytes]:
                         if ws.mode == "gunicorn":
                             raise StopIteration()
 
