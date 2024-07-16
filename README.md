@@ -8,10 +8,9 @@
 
 flask-websockets is an extension library for Flask, a popular web micro-framework. It adds real-time communication capabilities to your Flask application. flask-websockets implements the WebSocket protocol and allows for low-level control over the connections, as well as a high-level API for subscribing connections to rooms.
 
-flask-websockets supports most popular HTTP WSGI servers such as Werkzeug, Gunicorn, Eventlet and Gevent. 
+flask-websockets supports most popular HTTP WSGI servers such as Werkzeug, Gunicorn, Eventlet and Gevent.
 
 ## Example Usage
-
 ```python
 import time
 from threading import Thread
