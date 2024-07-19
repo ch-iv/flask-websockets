@@ -10,6 +10,7 @@ from queue import Queue
 from time import time
 from typing import IO, TYPE_CHECKING, Any, cast
 
+import msgspec
 from wsproto import ConnectionType, WSConnection
 from wsproto.events import (
     AcceptConnection,
@@ -145,6 +146,22 @@ class WebSocket:
                 raise TypeError("Data should be of instance bytes or str.")
         except BrokenPipeError:
             self.state = WebSocketState.DISCONNECTED
+
+    def send_json(self, json_payload: Any) -> None:
+        """Sends json-encodable data to the websocket.
+
+        :param data: data to be sent to the websocket.
+        """
+        encoded_data = msgspec.json.encode(json_payload)
+        self.send(encoded_data)
+
+    def send_msgpack(self, msgspec_payload: Any) -> None:
+        """Sends msgpack-encodable data to the websocket.
+
+        :param data: data to be sent to the websocket.
+        """
+        encoded_data = msgspec.msgpack.encode(msgspec_payload)
+        self.send(encoded_data)
 
     def receive(self, timeout: int | float | None = None) -> bytes | str | None:
         """Receive data over the WebSocket connection.

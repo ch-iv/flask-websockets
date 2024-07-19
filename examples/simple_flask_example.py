@@ -18,7 +18,8 @@ def create_app() -> Flask:
 
     def publish_to_general() -> None:
         while 1:
-            websockets.publish(str(time.time()), ["time"])
+            websockets.publish({"time": time.time()}, ["time"], encode_json=True)
+            websockets.publish({"time": time.time()}, ["time"], encode_msgpack=True)
             time.sleep(1)
 
     Thread(target=publish_to_general).start()

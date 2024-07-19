@@ -142,10 +142,14 @@ class WebSockets:
             if channel in self._subscriptions:
                 self._subscriptions[channel].remove(ws)
 
-    def publish(self, data: bytes | str, channels: Iterable[str]) -> None:
+    def publish(
+        self, data: Any, channels: Iterable[str], encode_json: bool = False, encode_msgpack: bool = False
+    ) -> None:
         """Publish data to the given channels. All subscribed websockets will receive this data.
 
         :param data: Data to publish to the channels
+        :param encode_json: Whether data should be json-encoded before publishing
+        :param encode_msgpack: Whether data should be msgpack-encoded before publishing
         :param channels: Channels to publish the data to
         """
         channels_set: set[str] = set(channels)
@@ -155,6 +159,11 @@ class WebSockets:
 
             for ws in self._subscriptions[channel]:
                 try:
-                    ws.send(data)
+                    if encode_json:
+                        ws.send_json(data)
+                    elif encode_msgpack:
+                        ws.send_msgpack(data)
+                    else:
+                        ws.send(data)
                 except RuntimeError:
                     logger.warning("Couldn't to send data to a socket.")
