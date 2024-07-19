@@ -1,6 +1,6 @@
 [project]
 name = "flask-websockets"
-version = "0.1.1"
+version = "0.1.2"
 description = "A WebSockets and channels implementation for Flask"
 authors = [
     {name = "ch-iv", email = "alicesummer38@gmail.com"},
